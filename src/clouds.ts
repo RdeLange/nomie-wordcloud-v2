@@ -62,7 +62,7 @@ export const normaliseClouds = (saved: unknown): Cloud[] => {
         kind,
         name: String(c.name ?? '').trim() || KIND_NAMES[kind],
         description: String(c.description ?? ''),
-        emoji: String(c.emoji ?? ''),
+        emoji: String(c.emoji ?? '').trim() || '☁️',
         color: isColour(c.color) ? c.color : COLOURS[0],
         days: DAY_CHOICES.includes(Number(c.days)) ? Number(c.days) : 90,
         keywords: Array.isArray(c.keywords) ? c.keywords.filter((k: unknown): k is string => typeof k === 'string' && k.trim() !== '').map((k: string) => k.trim()) : [],
@@ -77,6 +77,8 @@ export const keywordsFrom = (text: string): string[] => [...new Set(text.split('
 // The first thing wrong with a cloud, or null when it can be saved
 export const cloudProblem = (cloud: Cloud): string | null => {
   if (!cloud.name.trim()) return 'Give the word cloud a name.';
+  // the widget settings of the dashboard need a name and an emoji for every cloud
+  if (!cloud.emoji.trim()) return 'Choose an emoji for the word cloud.';
   if (cloud.kind === 'custom' && cloud.keywords.length === 0) return 'Add at least one word.';
   return null;
 };

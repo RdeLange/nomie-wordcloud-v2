@@ -38,14 +38,21 @@
     scale = plugin.prefs.fontScale || 1;
   };
 
-  const save = () => plugin?.storage.setItem('clouds', $state.snapshot(clouds));
+  // The clouds are kept under 'clouds'. The Nomie widget settings read the list of widgets under 'widgets' (id, name and emoji),
+  // so that list is written with them. Storage keys all live in one file for the plugin, prefs.json.
+  const save = async () => {
+    await plugin?.storage.setItem('clouds', $state.snapshot(clouds));
+    await plugin?.storage.setItem(
+      'widgets',
+      clouds.map((c) => ({ widgetid: c.id, name: c.name, emoji: c.emoji })),
+    );
+  };
 
   const ensureLoaded = async () => {
     if (loaded) return;
     await plugin.storage.init();
-    const stored = plugin.storage.getItem('clouds');
-    clouds = normaliseClouds(stored);
-    if (!stored) await save();
+    clouds = normaliseClouds(plugin.storage.getItem('clouds'));
+    await save();
     loaded = true;
   };
 

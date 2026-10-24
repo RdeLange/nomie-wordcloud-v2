@@ -91,7 +91,12 @@ describe('the size of a word', () => {
 });
 
 describe('saving a cloud', () => {
-  it('a cloud needs a name, and a custom cloud needs a word', () => {
+  it('a cloud needs a name and an emoji, because the dashboard settings list it by both', () => {
+    expect(cloudProblem(custom({ emoji: ' ' }))).toBeTruthy();
+    expect(normaliseClouds([{ id: '7', kind: 'emotions', emoji: '' }])[0].emoji).toBe('☁️');
+  });
+
+  it('a custom cloud needs a word', () => {
     expect(cloudProblem(custom({ name: ' ' }))).toBeTruthy();
     expect(cloudProblem(custom({ keywords: [] }))).toBeTruthy();
     expect(cloudProblem(custom())).toBeNull();
