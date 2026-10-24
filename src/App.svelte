@@ -32,6 +32,10 @@
   // The size of the widget: the frame the plugin is drawn in, read again when the widget is resized.
   // The most counted word takes the largest size at which all the words fit the frame, with the app's text size on top.
   let frame = $state({ width: window.innerWidth, height: window.innerHeight });
+  // Read the frame again: when the widget opens, and whenever the frame is resized
+  const readFrame = () => {
+    frame = { width: window.innerWidth, height: window.innerHeight };
+  };
   const largestPx = $derived(fittedLargest(words, frame.width, frame.height, scale));
   const draftIsSaved = $derived(!!draft && clouds.some((c) => c.id === draft!.id));
   const draftProblem = $derived(draft ? cloudProblem({ ...draft, keywords: draft.kind === 'custom' ? keywordsFrom(keywordsText) : [] }) : null);
@@ -137,10 +141,11 @@
       applyNomieValues();
       await ensureLoaded();
     });
-    window.addEventListener('resize', () => {
-      frame = { width: window.innerWidth, height: window.innerHeight };
-    });
+    window.addEventListener('resize', readFrame);
+    // the body fills the frame, so a change of the frame size shows here too
+    new ResizeObserver(readFrame).observe(document.body);
     plugin.onWidget(async () => {
+      readFrame();
       view = 'widget';
       applyNomieValues();
       await loadWidget();
