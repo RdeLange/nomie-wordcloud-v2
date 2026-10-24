@@ -109,7 +109,7 @@ export const countWords = async (terms: string[], countOf: (term: string) => Pro
 export const weightOf = (count: number, largest: number): number => (largest > 0 ? count / largest : 0);
 
 // The size of a word, in the smaller side of the widget (the widget scales its text to that side)
-export const sizeOf = (weight: number): number => 5 + 9 * weight;
+export const sizeOf = (weight: number): number => 8 + 10 * weight;
 
 // Tapping a person's name starts a note about them, as in v1
 export const personNote = (name: string): string => `@${name.toLowerCase()} `;

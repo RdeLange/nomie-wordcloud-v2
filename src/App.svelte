@@ -168,7 +168,7 @@
             <button
               class="word"
               class:tap={widgetCloud.kind === 'persons'}
-              style="font-size: clamp(9px, calc({sizeOf(weight)} * 1cqmin * var(--scale)), 36px); font-weight: {weight > 0.6 ? 700 : 500}; color: color-mix(in srgb, {widgetCloud.color} {Math.round(45 + 55 * weight)}%, var(--text));"
+              style="font-size: clamp(11px, calc({sizeOf(weight)} * 1cqmin * var(--scale)), 44px); font-weight: {weight > 0.6 ? 700 : 500}; color: color-mix(in srgb, {widgetCloud.color} {Math.round(45 + 55 * weight)}%, var(--text));"
               onclick={() => tapWord(word)}
             >{word.text}</button>
           </li>
@@ -259,7 +259,8 @@
 <style>
   .card { box-sizing: border-box; min-height: 100vh; padding: 16px; background: var(--page); color: var(--text); font-size: calc(16px * var(--scale)); line-height: 1.4; }
   /* the words are sized against the smaller side of the widget, so a large widget shows large words */
-  .card.widget { container-type: size; min-height: 0; height: 100vh; padding: 12px; font-size: calc(14px * var(--scale)); display: flex; flex-direction: column; }
+  /* the widget card is the card colour of the app, not the page colour */
+  .card.widget { container-type: size; min-height: 0; height: 100vh; padding: 12px; background: var(--card); font-size: calc(16px * var(--scale)); display: flex; flex-direction: column; }
   h1 { margin: 0; font-size: calc(26px * var(--scale)); font-weight: 700; }
   h2 { margin: 20px 0 6px; font-size: calc(13px * var(--scale)); font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
   .muted { margin: 4px 0; color: var(--muted); }

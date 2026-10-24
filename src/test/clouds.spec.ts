@@ -86,7 +86,7 @@ describe('the size of a word', () => {
 
   it('a larger weight is a larger word', () => {
     expect(sizeOf(0)).toBeLessThan(sizeOf(0.5));
-    expect(sizeOf(1)).toBe(14);
+    expect(sizeOf(1)).toBe(18);
   });
 });
 
