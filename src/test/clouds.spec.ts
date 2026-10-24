@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cloudProblem, countWords, defaultClouds, sizeOf, keywordsFrom, newCloud, normaliseClouds, peopleIn, personNote, termsOf, weightOf, KICK_STARTER, type Cloud } from '../clouds';
+import { cloudProblem, cloudHeight, countWords, defaultClouds, fittedLargest, wordPx, keywordsFrom, newCloud, normaliseClouds, peopleIn, personNote, termsOf, weightOf, KICK_STARTER, type Cloud } from '../clouds';
 import emotions from '../data/emotions.json';
 import virtues from '../data/virtues.json';
 
@@ -84,9 +84,30 @@ describe('the size of a word', () => {
     expect(weightOf(0, 0)).toBe(0);
   });
 
-  it('a larger weight is a larger word', () => {
-    expect(sizeOf(0)).toBeLessThan(sizeOf(0.5));
-    expect(sizeOf(1)).toBe(18);
+  it('a larger weight is a larger word, and the least counted is 45% of the largest', () => {
+    expect(wordPx(0, 40)).toBeCloseTo(18);
+    expect(wordPx(0.5, 40)).toBeLessThan(wordPx(1, 40));
+    expect(wordPx(1, 40)).toBe(40);
+  });
+
+  it('the cloud gets taller when the words wrap onto more lines', () => {
+    const one = [{ text: 'alert', px: 20 }];
+    const many = Array.from({ length: 30 }, () => ({ text: 'alert', px: 20 }));
+    expect(cloudHeight(one, 300)).toBeLessThan(cloudHeight(many, 300));
+  });
+
+  it('a bigger frame gives bigger words, and more words give smaller words in the same frame', () => {
+    const words = Array.from({ length: 8 }, (_, i) => ({ text: `word${i}`, count: 8 - i }));
+    const many = Array.from({ length: 120 }, (_, i) => ({ text: `term${i}`, count: 120 - i }));
+    expect(fittedLargest(words, 800, 300, 1)).toBeGreaterThan(fittedLargest(words, 340, 140, 1));
+    expect(fittedLargest(words, 340, 140, 1)).toBeGreaterThan(fittedLargest(many, 340, 140, 1));
+  });
+
+  it('the text size of the app multiplies the words, and the smallest size is kept', () => {
+    // a large frame, so the largest size (72px before the text size) is the limit and the text size shows
+    const words = [{ text: 'alert', count: 3 }];
+    expect(fittedLargest(words, 800, 400, 1.22)).toBeGreaterThan(fittedLargest(words, 800, 400, 1));
+    expect(fittedLargest(words, 340, 140, 1)).toBeGreaterThanOrEqual(12);
   });
 });
 

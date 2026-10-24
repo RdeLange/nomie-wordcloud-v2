@@ -108,8 +108,39 @@ export const countWords = async (terms: string[], countOf: (term: string) => Pro
 // How much of the largest word a word is, from 0 to 1
 export const weightOf = (count: number, largest: number): number => (largest > 0 ? count / largest : 0);
 
-// The size of a word, in the smaller side of the widget (the widget scales its text to that side)
-export const sizeOf = (weight: number): number => 8 + 10 * weight;
+// The size of a word in pixels: the most counted word is `largest`, the least counted is 45% of it, and no word is smaller than 9px
+export const wordPx = (weight: number, largest: number, floor = 9): number => Math.max(largest * (0.45 + 0.55 * weight), floor);
+
+// The height the words take when they are set in lines of `width` pixels. A word is about half its size wide per character.
+export const cloudHeight = (words: Array<{ text: string; px: number }>, width: number): number => {
+  let height = 0;
+  let lineWidth = 0;
+  let lineMax = 0;
+  for (const word of words) {
+    const wide = word.text.length * word.px * 0.5 + 10;
+    if (lineWidth > 0 && lineWidth + wide > width) {
+      height += lineMax * 1.3;
+      lineWidth = 0;
+      lineMax = 0;
+    }
+    lineWidth += wide;
+    lineMax = Math.max(lineMax, word.px);
+  }
+  return lineMax > 0 ? height + lineMax * 1.3 : 0;
+};
+
+// The largest size of the most counted word at which all the words fit the frame, with the text size of the app on top.
+// The frame gives up its header and padding first. When even the smallest size does not fit, the least counted words are cut.
+export const fittedLargest = (words: Word[], width: number, height: number, multiplier: number): number => {
+  const available = height - 60;
+  const top = words[0]?.count ?? 0;
+  for (let largest = 72; largest > 12; largest--) {
+    const px = largest * multiplier;
+    const sized = words.map((w) => ({ text: w.text, px: wordPx(weightOf(w.count, top), px, 9 * multiplier) }));
+    if (cloudHeight(sized, width - 24) <= available) return px;
+  }
+  return 12 * multiplier;
+};
 
 // Tapping a person's name starts a note about them, as in v1
 export const personNote = (name: string): string => `@${name.toLowerCase()} `;

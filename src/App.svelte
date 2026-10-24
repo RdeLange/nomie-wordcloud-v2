@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import {
-    cloudProblem, countWords, defaultClouds, sizeOf, keywordsFrom, newCloud, normaliseClouds, peopleIn, personNote, termsOf, weightOf,
+    cloudProblem, countWords, defaultClouds, fittedLargest, wordPx, keywordsFrom, newCloud, normaliseClouds, peopleIn, personNote, termsOf, weightOf,
     COLOURS, DAY_CHOICES, KICK_STARTER, KIND_NAMES, PEOPLE_DAYS, type Cloud, type Word,
   } from './clouds';
   import { paletteFrom, type Palette } from './palette';
@@ -29,6 +29,10 @@
   let status = $state<'loading' | 'ready' | 'missing'>('loading');
 
   const largest = $derived(words[0]?.count ?? 0);
+  // The size of the widget: the frame the plugin is drawn in, read again when the widget is resized.
+  // The most counted word takes the largest size at which all the words fit the frame, with the app's text size on top.
+  let frame = $state({ width: window.innerWidth, height: window.innerHeight });
+  const largestPx = $derived(fittedLargest(words, frame.width, frame.height, scale));
   const draftIsSaved = $derived(!!draft && clouds.some((c) => c.id === draft!.id));
   const draftProblem = $derived(draft ? cloudProblem({ ...draft, keywords: draft.kind === 'custom' ? keywordsFrom(keywordsText) : [] }) : null);
 
@@ -133,6 +137,9 @@
       applyNomieValues();
       await ensureLoaded();
     });
+    window.addEventListener('resize', () => {
+      frame = { width: window.innerWidth, height: window.innerHeight };
+    });
     plugin.onWidget(async () => {
       view = 'widget';
       applyNomieValues();
@@ -168,7 +175,7 @@
             <button
               class="word"
               class:tap={widgetCloud.kind === 'persons'}
-              style="font-size: clamp(11px, calc({sizeOf(weight)} * 1cqmin * var(--scale)), 44px); font-weight: {weight > 0.6 ? 700 : 500}; color: color-mix(in srgb, {widgetCloud.color} {Math.round(45 + 55 * weight)}%, var(--text));"
+              style="font-size: {wordPx(weight, largestPx, 9 * scale)}px; font-weight: {weight > 0.6 ? 700 : 500}; color: color-mix(in srgb, {widgetCloud.color} {Math.round(45 + 55 * weight)}%, var(--text));"
               onclick={() => tapWord(word)}
             >{word.text}</button>
           </li>
