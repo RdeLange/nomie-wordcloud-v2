@@ -1,3 +1,4 @@
+import { t } from './i18n/index.svelte';
 // The word clouds: the presets, how a cloud counts its words, and how big each word is drawn.
 // The screens only show what this module works out.
 import emotions from './data/emotions.json';
@@ -23,7 +24,7 @@ export type Cloud = {
 export type Word = { text: string; count: number };
 
 export const DAY_CHOICES = [10, 20, 30, 60, 90];
-export const KIND_NAMES: Record<Kind, string> = { emotions: 'Emotions', virtues: 'Virtues', persons: 'Persons', custom: 'Custom' };
+export const KIND_NAMES: Record<Kind, string> = { get emotions() { return t('kindEmotions'); }, get virtues() { return t('kindVirtues'); }, get persons() { return t('kindPersons'); }, get custom() { return t('kindCustom'); } };
 export const COLOURS = ['#C47ADA', '#FF2D55', '#FF9500', '#34C759', '#00C7BE', '#007AFF', '#5856D6', '#AF52DE', '#A2845E', '#8E8E93', '#FF3B30', '#30B0C7'];
 // the people in notes are looked up over this many days, as in v1
 export const PEOPLE_DAYS = 90;
@@ -32,13 +33,13 @@ const KINDS: Kind[] = ['emotions', 'virtues', 'persons', 'custom'];
 const TERMS: Record<'emotions' | 'virtues', string[]> = { emotions, virtues };
 
 const PRESETS: Array<Omit<Cloud, 'id'>> = [
-  { kind: 'emotions', name: 'Emotions', description: 'The words for feelings in your notes', emoji: '🥴', color: '#C47ADA', days: 90, keywords: [] },
-  { kind: 'virtues', name: 'Virtues', description: 'The virtues you write about', emoji: '✋', color: '#C47ADA', days: 90, keywords: [] },
-  { kind: 'persons', name: 'Persons', description: 'The people in your notes. Tap a name to write a note about them', emoji: '👨‍👩‍👧‍👦', color: '#C47ADA', days: 90, keywords: [] },
+  { kind: 'emotions', get name() { return t('kindEmotions'); }, get description() { return t('descEmotions'); }, emoji: '🥴', color: '#C47ADA', days: 90, keywords: [] },
+  { kind: 'virtues', get name() { return t('kindVirtues'); }, get description() { return t('descVirtues'); }, emoji: '✋', color: '#C47ADA', days: 90, keywords: [] },
+  { kind: 'persons', get name() { return t('kindPersons'); }, get description() { return t('descPersons'); }, emoji: '👨‍👩‍👧‍👦', color: '#C47ADA', days: 90, keywords: [] },
 ];
 
 // The starter a new user can pick, as in v1
-export const KICK_STARTER: Omit<Cloud, 'id'> = { kind: 'custom', name: 'Kick Starter', description: 'A simple word cloud to start with', emoji: '𓇬', color: '#C47ADA', days: 90, keywords: ['Nomie', 'Wordcloud'] };
+export const KICK_STARTER: Omit<Cloud, 'id'> = { kind: 'custom', get name() { return t('nameKick'); }, get description() { return t('descKick'); }, emoji: '𓇬', color: '#C47ADA', days: 90, keywords: ['Nomie', 'Wordcloud'] };
 
 // The three clouds a new user starts with
 export const defaultClouds = (): Cloud[] => PRESETS.map((preset, i) => ({ ...preset, id: String(i + 1) }));
@@ -76,10 +77,10 @@ export const keywordsFrom = (text: string): string[] => [...new Set(text.split('
 
 // The first thing wrong with a cloud, or null when it can be saved
 export const cloudProblem = (cloud: Cloud): string | null => {
-  if (!cloud.name.trim()) return 'Give the word cloud a name.';
+  if (!cloud.name.trim()) return t('errName');
   // the widget settings of the dashboard need a name and an emoji for every cloud
-  if (!cloud.emoji.trim()) return 'Choose an emoji for the word cloud.';
-  if (cloud.kind === 'custom' && cloud.keywords.length === 0) return 'Add at least one word.';
+  if (!cloud.emoji.trim()) return t('errEmoji');
+  if (cloud.kind === 'custom' && cloud.keywords.length === 0) return t('errWords');
   return null;
 };
 

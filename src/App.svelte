@@ -5,6 +5,7 @@
     COLOURS, DAY_CHOICES, KICK_STARTER, KIND_NAMES, PEOPLE_DAYS, type Cloud, type Word,
   } from './clouds';
   import { paletteFrom, glassFrom, tintTextFrom, dangerTextFrom, type Palette, type Glass } from './palette';
+  import { t, setLanguage } from './i18n/index.svelte';
   import { onPrefsChange } from './prefs-live';
 
   // the presets as a new user can start from them
@@ -46,6 +47,7 @@
   const applyNomieValues = () => {
     if (!plugin?.prefs) return;
     palette = paletteFrom(plugin.prefs);
+    setLanguage(plugin.prefs?.language);
     glass = glassFrom(plugin.prefs);
     tintText = tintTextFrom(plugin.prefs);
     dangerText = dangerTextFrom(plugin.prefs);
@@ -118,7 +120,7 @@
   const deleteDraft = async () => {
     if (!draft) return;
     const gone = draft;
-    const res = await plugin.confirm('Delete word cloud?', `"${gone.name}" is removed. A dashboard widget that shows it will say it is gone.`);
+    const res = await plugin.confirm(t('deleteQ'), t('deleteBody', { name: gone.name }));
     if (!res?.value) return;
     clouds = clouds.filter((c) => c.id !== gone.id);
     await save();
@@ -169,15 +171,15 @@
   {#if view === 'widget'}
     <div class="head">
       <span>{widgetCloud?.emoji ?? '☁️'}</span>
-      <span class="title">{widgetCloud?.name ?? 'Word cloud'}</span>
-      {#if widgetCloud}<span class="meta">Last {widgetCloud.days} days</span>{/if}
+      <span class="title">{widgetCloud?.name ?? t('wordCloud')}</span>
+      {#if widgetCloud}<span class="meta">{t('lastDays', { days: widgetCloud.days })}</span>{/if}
     </div>
     {#if status === 'missing'}
-      <p class="muted">This widget points at a word cloud that is gone. Pick another one in the widget settings.</p>
+      <p class="muted">{t('goneWidget')}</p>
     {:else if status === 'loading'}
-      <p class="muted">Counting words…</p>
+      <p class="muted">{t('counting')}</p>
     {:else if words.length === 0}
-      <p class="muted">No words in the last {widgetCloud?.days} days yet.</p>
+      <p class="muted">{t('noWordsDays', { days: widgetCloud?.days ?? 0 })}</p>
     {:else if widgetCloud}
       <ul class="cloud">
         {#each words as word (word.text)}
@@ -195,8 +197,8 @@
     {/if}
   {:else}
     {#if screen === 'list'}
-      <h1>Word clouds</h1>
-      <p class="muted">The words in your notes, as clouds on your dashboard.</p>
+      <h1>{t('cloudsTitle')}</h1>
+      <p class="muted">{t('cloudsIntro')}</p>
 
       <section class="panel">
         {#each clouds as cloud (cloud.id)}
@@ -206,61 +208,61 @@
               <span class="title">{cloud.name}</span>
               <span class="muted">{cloud.description || KIND_NAMES[cloud.kind]}</span>
             </span>
-            <span class="muted">{cloud.days} d</span>
+            <span class="muted">{cloud.days} {t('daysShort')}</span>
           </button>
         {:else}
-          <p class="muted pad">No word clouds yet. Add one to show on your dashboard.</p>
+          <p class="muted pad">{t('noCloudsYet')}</p>
         {/each}
       </section>
-      <button class="primary" onclick={() => (screen = 'choose')}>New word cloud</button>
+      <button class="primary" onclick={() => (screen = 'choose')}>{t('newCloud')}</button>
     {:else if screen === 'choose'}
-      <button class="link" onclick={() => (screen = 'list')}>‹ Back</button>
-      <h1>New word cloud</h1>
-      <p class="muted">Start from one of these, or from your own words.</p>
+      <button class="link" onclick={() => (screen = 'list')}>‹ {t('back')}</button>
+      <h1>{t('newCloud')}</h1>
+      <p class="muted">{t('chooseIntro')}</p>
       <div class="chips">
         {#each PRESET_LIST as preset (preset.id)}
           <button onclick={() => startNew(presetBase(preset))}>{preset.emoji} {preset.name}</button>
         {/each}
-        <button onclick={() => startNew({ kind: 'custom', name: '', description: '', emoji: '☁️', color: COLOURS[0], days: 90, keywords: [] })}>✏️ Your own words</button>
+        <button onclick={() => startNew({ kind: 'custom', name: '', description: '', emoji: '☁️', color: COLOURS[0], days: 90, keywords: [] })}>✏️ {t('ownWords')}</button>
         <button onclick={() => startNew(KICK_STARTER)}>{KICK_STARTER.emoji} {KICK_STARTER.name}</button>
       </div>
     {:else if draft}
-      <button class="link" onclick={() => (screen = 'list')}>‹ Back</button>
-      <h1>{draftIsSaved ? draft.name || 'Word cloud' : 'New word cloud'}</h1>
+      <button class="link" onclick={() => (screen = 'list')}>‹ {t('back')}</button>
+      <h1>{draftIsSaved ? draft.name || t('wordCloud') : t('newCloud')}</h1>
 
       <section class="panel">
         <label class="field">
-          <span class="muted">Name</span>
+          <span class="muted">{t('name')}</span>
           <input class="input" bind:value={draft.name} placeholder="My word cloud" />
         </label>
         <label class="field">
-          <span class="muted">Description</span>
+          <span class="muted">{t('description')}</span>
           <input class="input" bind:value={draft.description} placeholder="What the words are about" />
         </label>
         <label class="field">
-          <span class="muted">Emoji</span>
+          <span class="muted">{t('emoji')}</span>
           <input class="input emoji" bind:value={draft.emoji} maxlength="4" />
         </label>
       </section>
 
       {#if draft.kind === 'custom'}
-        <h2>Words</h2>
+        <h2>{t('words')}</h2>
         <section class="panel">
           <textarea class="input" rows="4" bind:value={keywordsText} placeholder="running, tennis, swimming"></textarea>
-          <p class="muted hint">Separate the words with commas. Each one is counted in your notes.</p>
+          <p class="muted hint">{t('wordsHint')}</p>
         </section>
       {:else}
-        <p class="muted">{KIND_NAMES[draft.kind]} is a list the plugin knows. Only the name, colour and days can change.</p>
+        <p class="muted">{KIND_NAMES[draft.kind]} {t('listNote')}</p>
       {/if}
 
-      <h2>Colour</h2>
+      <h2>{t('colour')}</h2>
       <section class="panel swatches">
         {#each COLOURS as c (c)}
           <button class="swatch" class:picked={draft.color === c} style="background: {c}" aria-label="Use this colour" onclick={() => (draft!.color = c)}></button>
         {/each}
       </section>
 
-      <h2>Counted over</h2>
+      <h2>{t('countedOver')}</h2>
       <div class="chips">
         {#each DAY_CHOICES as d (d)}
           <button class:active={draft.days === d} onclick={() => (draft!.days = d)}>{d} days</button>
@@ -268,8 +270,8 @@
       </div>
 
       {#if draftProblem}<p class="problem">{draftProblem}</p>{/if}
-      <button class="primary" onclick={saveDraft} disabled={!!draftProblem}>Save</button>
-      {#if draftIsSaved}<button class="danger" onclick={deleteDraft}>Delete word cloud</button>{/if}
+      <button class="primary" onclick={saveDraft} disabled={!!draftProblem}>{t('save')}</button>
+      {#if draftIsSaved}<button class="danger" onclick={deleteDraft}>{t('deleteCloud')}</button>{/if}
     {/if}
   {/if}
 </div>
