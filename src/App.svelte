@@ -4,7 +4,7 @@
     cloudProblem, countWords, defaultClouds, fittedLargest, wordPx, keywordsFrom, newCloud, normaliseClouds, peopleIn, personNote, termsOf, weightOf,
     COLOURS, DAY_CHOICES, KICK_STARTER, KIND_NAMES, PEOPLE_DAYS, type Cloud, type Word,
   } from './clouds';
-  import { paletteFrom, type Palette } from './palette';
+  import { paletteFrom, glassFrom, tintTextFrom, dangerTextFrom, type Palette, type Glass } from './palette';
   import { onPrefsChange } from './prefs-live';
 
   // the presets as a new user can start from them
@@ -13,6 +13,9 @@
   let plugin: any;
   let view = $state<'modal' | 'widget'>('modal');
   let palette = $state<Palette>(paletteFrom(undefined));
+  let glass = $state<Glass>(glassFrom(undefined));
+  let tintText = $state(tintTextFrom(undefined));
+  let dangerText = $state(dangerTextFrom(undefined));
   let scale = $state(1);
 
   // the modal: the list of clouds, the choice of a starting point, or the editor of one cloud
@@ -43,6 +46,9 @@
   const applyNomieValues = () => {
     if (!plugin?.prefs) return;
     palette = paletteFrom(plugin.prefs);
+    glass = glassFrom(plugin.prefs);
+    tintText = tintTextFrom(plugin.prefs);
+    dangerText = dangerTextFrom(plugin.prefs);
     scale = plugin.prefs.fontScale || 1;
   };
 
@@ -159,7 +165,7 @@
   });
 </script>
 
-<div class="card" class:widget={view === 'widget'} style="--page: {palette.page}; --card: {palette.card}; --card-inner: {palette.cardInner}; --text: {palette.text}; --muted: {palette.textSecondary}; --line: {palette.separator}; --fill: {palette.fill}; --tint: {palette.tint}; --on-tint: {palette.onTint}; --tint-soft: {palette.tintSoft}; --danger: {palette.danger}; --scale: {scale};">
+<div class="card" class:widget={view === 'widget'} style="--page: {palette.page}; --card: {palette.card}; --card-inner: {palette.cardInner}; --text: {palette.text}; --muted: {palette.textSecondary}; --line: {palette.separator}; --fill: {palette.fill}; --tint: {palette.tint}; --on-tint: {palette.onTint}; --tint-soft: {palette.tintSoft}; --danger: {dangerText}; --tint-text: {tintText}; --glass-fill: {glass.fill}; --glass-edge: {glass.edge}; --glass-blur: {glass.blur}; --glass-shadow: {glass.shadow}; --scale: {scale};">
   {#if view === 'widget'}
     <div class="head">
       <span>{widgetCloud?.emoji ?? '☁️'}</span>
@@ -269,6 +275,8 @@
 </div>
 
 <style>
+  /* the app's text: its iOS font stack, and the rounded face for numbers (PLG-LF-07, PLG-LF-08) */
+  :global(body) { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; --ios-font-rounded: ui-rounded, -apple-system, system-ui, sans-serif; }
   .card { box-sizing: border-box; min-height: 100vh; padding: 16px; background: var(--page); color: var(--text); font-size: calc(16px * var(--scale)); line-height: 1.4; }
   /* the words are sized against the smaller side of the widget, so a large widget shows large words */
   /* the widget card is the card colour of the app, not the page colour */
