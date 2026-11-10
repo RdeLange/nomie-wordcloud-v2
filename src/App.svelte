@@ -196,8 +196,11 @@
       </ul>
     {/if}
   {:else}
+    <header class="top">
+      {#if screen !== 'list'}<button class="link" onclick={() => (screen = 'list')}>‹ {t('back')}</button>{/if}
+      <h1>{screen === 'list' ? t('cloudsTitle') : draftIsSaved && screen === 'edit' ? draft?.name || t('wordCloud') : t('newCloud')}</h1>
+    </header>
     {#if screen === 'list'}
-      <h1>{t('cloudsTitle')}</h1>
       <p class="muted">{t('cloudsIntro')}</p>
 
       <section class="panel">
@@ -216,8 +219,6 @@
       </section>
       <button class="primary" onclick={() => (screen = 'choose')}>{t('newCloud')}</button>
     {:else if screen === 'choose'}
-      <button class="link" onclick={() => (screen = 'list')}>‹ {t('back')}</button>
-      <h1>{t('newCloud')}</h1>
       <p class="muted">{t('chooseIntro')}</p>
       <div class="chips">
         {#each PRESET_LIST as preset (preset.id)}
@@ -227,8 +228,6 @@
         <button onclick={() => startNew(KICK_STARTER)}>{KICK_STARTER.emoji} {KICK_STARTER.name}</button>
       </div>
     {:else if draft}
-      <button class="link" onclick={() => (screen = 'list')}>‹ {t('back')}</button>
-      <h1>{draftIsSaved ? draft.name || t('wordCloud') : t('newCloud')}</h1>
 
       <section class="panel">
         <label class="field">
@@ -277,6 +276,9 @@
 </div>
 
 <style>
+  /* the header is a Liquid Glass bar (D-glass): the title and the back link stay at the top, and the content scrolls under them */
+  .top { position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 12px; margin: -16px -16px 8px; padding: 16px 16px 10px; background: var(--glass-fill); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border-bottom: 1px solid var(--glass-edge); }
+  .top h1 { margin: 0; }
   /* the app's text: its iOS font stack, and the rounded face for numbers (PLG-LF-07, PLG-LF-08) */
   :global(body) { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; -webkit-font-smoothing: antialiased; --ios-font-rounded: ui-rounded, -apple-system, system-ui, sans-serif; }
   .card { box-sizing: border-box; min-height: 100vh; padding: 16px; background: var(--page); color: var(--text); font-size: calc(16px * var(--scale)); line-height: 1.4; }
