@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { startSnapshots } from './snapshot';
   import { onMount } from 'svelte';
   import {
     cloudProblem, countWords, defaultClouds, fittedLargest, wordPx, keywordsFrom, newCloud, normaliseClouds, peopleIn, personNote, termsOf, weightOf,
@@ -144,6 +145,7 @@
       addToMoreMenu: true,
       addToWidgets: true,
     });
+    startSnapshots(plugin);
     onPrefsChange(plugin, () => applyNomieValues());
     plugin.onRegistered(async () => {
       applyNomieValues();
