@@ -74,9 +74,9 @@
   };
 
   // The words of a cloud over its days, the most counted first. A persons cloud counts the people in the notes.
-  const countFor = async (cloud: Cloud): Promise<Word[]> => {
+  const countFor = async (cloud: Cloud, days: number = cloud.days): Promise<Word[]> => {
     const people = cloud.kind === 'persons' ? peopleIn((await plugin.searchNotes('', new Date(), PEOPLE_DAYS)) ?? []) : [];
-    return countWords(termsOf(cloud, people), async (term) => ((await plugin.searchNotes(term, new Date(), cloud.days)) ?? []).length);
+    return countWords(termsOf(cloud, people), async (term) => ((await plugin.searchNotes(term, new Date(), days)) ?? []).length);
   };
 
   // The dashboard widget shows the cloud its index names. Without an index it shows the first cloud.
@@ -88,7 +88,9 @@
       return;
     }
     status = 'loading';
-    words = await countFor(widgetCloud);
+    // the period is chosen in the dashboard's widget footer, and the app passes it in the frame's address (days)
+    const days = Number(new URLSearchParams(location.search).get('days')) || widgetCloud.days;
+    words = await countFor(widgetCloud, days);
     status = 'ready';
   };
 
@@ -144,6 +146,8 @@
       addToCaptureMenu: true,
       addToMoreMenu: true,
       addToWidgets: true,
+      // the widget's period is the one chosen in the dashboard footer (see the widget view)
+      widgetTimeframe: true,
     });
     startSnapshots(plugin);
     onPrefsChange(plugin, () => applyNomieValues());
@@ -174,14 +178,13 @@
     <div class="head">
       <span>{widgetCloud?.emoji ?? '☁️'}</span>
       <span class="title">{widgetCloud?.name ?? t('wordCloud')}</span>
-      {#if widgetCloud}<span class="meta">{t('lastDays', { days: widgetCloud.days })}</span>{/if}
     </div>
     {#if status === 'missing'}
       <p class="muted">{t('goneWidget')}</p>
     {:else if status === 'loading'}
       <p class="muted">{t('counting')}</p>
     {:else if words.length === 0}
-      <p class="muted">{t('noWordsDays', { days: widgetCloud?.days ?? 0 })}</p>
+      <p class="muted">{t('noWords')}</p>
     {:else if widgetCloud}
       <ul class="cloud">
         {#each words as word (word.text)}
